@@ -47,7 +47,6 @@ management:
         include: "*"
 
 logging:
-  level:
-    root: INFO
+  config: classpath:logback/logback-${spring.profiles.active:local}.xml
   file:
-    name: ./logs/app.log
+    name: ${LOG_FILE_PATH:./logs/app.log}
