@@ -1,0 +1,34 @@
+services:
+  database:
+    image: mysql:8.4.0
+    container_name: knu-cse-official-database
+    environment:
+      MYSQL_ROOT_PASSWORD: abcd
+      MYSQL_DATABASE: sa
+      MYSQL_USER: sa
+      MYSQL_PASSWORD: abcd
+    command:
+      --port=3306
+      --max_allowed_packet=32M
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    restart: "always"
+    volumes:
+      - knu-cse-official-database:/var/lib/mysql
+    networks:
+      - knu-cse-official-bridge
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pabcd1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  knu-cse-official-database:
+
+networks:
+  knu-cse-official-bridge:
+    driver: bridge
