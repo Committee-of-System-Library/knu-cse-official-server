@@ -1,17 +1,23 @@
 package knu.chcse.knucseofficialserver.domain.entity.comment;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Null;
 import knu.chcse.knucseofficialserver.domain.entity.common.BaseTimeEntity;
 import knu.chcse.knucseofficialserver.domain.entity.post.Post;
 import knu.chcse.knucseofficialserver.domain.entity.student.Student;
 import lombok.*;
+import org.hibernate.annotations.SoftDelete;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@SoftDelete
 public class Comment extends BaseTimeEntity {
-    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     private Long id;
 
@@ -27,8 +33,8 @@ public class Comment extends BaseTimeEntity {
     @Column(name = "comment_content", nullable = false)
     private String content;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
+    @Column(name = "is_deleted")
+    private LocalDateTime isDeleted;
 
     public static Comment create(
         Post post,
@@ -39,7 +45,7 @@ public class Comment extends BaseTimeEntity {
         comment.post = post;
         comment.student = student;
         comment.content = content;
-        comment.isDeleted = false;
+        comment.isDeleted = null;
         return comment;
     }
 }
