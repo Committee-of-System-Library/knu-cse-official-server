@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Table(name="comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@SoftDelete
 public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
