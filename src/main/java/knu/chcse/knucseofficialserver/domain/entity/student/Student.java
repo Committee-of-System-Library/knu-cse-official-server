@@ -10,7 +10,8 @@ import lombok.*;
 @Getter
 public class Student extends BaseTimeEntity {
 
-    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "student_id")
     private Long id;
 
