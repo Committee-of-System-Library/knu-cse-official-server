@@ -63,4 +63,14 @@ public class Post extends BaseTimeEntity {
         post.status = PostStatus.ACTIVE;
         return post;
     }
+
+    //domain 중심 설계
+    public void update(String title, String content){
+        this.title = title;
+        this.content = content;
+    }
+
+    public void delete(){
+        this.status = PostStatus.DELETED;
+    }
 }
