@@ -11,7 +11,7 @@ import java.util.List;
 
 //interface 설계
 public interface NoticeService {
-    Long createNotice(CreateNoticeRequest request);
+    Long createNotice(CreateNoticeRequest request, Long studentNumber);
     NoticeResponse getNotice(Long noticeId);
     List<NoticeResponse> getNotices();
     void updateNotice(Long noticeId, UpdateNoticeRequest request);
