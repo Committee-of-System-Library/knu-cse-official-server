@@ -14,7 +14,7 @@ public interface NoticeService {
     Long createNotice(CreateNoticeRequest request, Long studentNumber);
     NoticeResponse getNotice(Long noticeId);
     List<NoticeResponse> getNotices();
-    void updateNotice(Long noticeId, UpdateNoticeRequest request);
-    void deleteNotice(Long noticeId);
+    void updateNotice(Long noticeId, Long studentNumber,UpdateNoticeRequest request);
+    void deleteNotice(Long noticeId, Long studentNumber);
 
 }
