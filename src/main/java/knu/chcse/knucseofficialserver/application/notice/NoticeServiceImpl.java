@@ -17,6 +17,7 @@ import knu.chcse.knucseofficialserver.global.error.NoticeErrorCode;
 import knu.chcse.knucseofficialserver.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ public class NoticeServiceImpl implements NoticeService {
 
         checkAdminPermission(studentNumber);
 
-        //실제 객체 생성을 위해 checkAdminPermission 사용 후에 객체 생성
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
                 ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
@@ -52,7 +52,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public NoticeResponse getNotice(Long noticeId) {
          Post post = getNoticePost(noticeId);
 
@@ -65,18 +65,13 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<NoticeResponse> getNotices() {
-        List<Post> posts = postRepository.findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE);
-
-        List<NoticeResponse> notices = new ArrayList<>();
-
-        for(Post post : posts){
-            NoticeResponse notice = NoticeResponse.from(post);
-            notices.add(notice);
-        }
-
-        return notices;
+        return postRepository
+                .findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE)
+                .stream()
+                .map(NoticeResponse::from)
+                .toList();
     }
 
     @Override
@@ -98,13 +93,11 @@ public class NoticeServiceImpl implements NoticeService {
         post.delete();
     }
 
-    //duplicate code remove
     private void checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
                 ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        //permission check
         if(student.getRole() != StudentRole.ADMIN){
             throw new BusinessException(NoticeErrorCode.NO_NOTICE_PERMISSION);
         }
@@ -115,8 +108,6 @@ public class NoticeServiceImpl implements NoticeService {
                 ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        //lombok made isNotice , not "getIsNotice"
-        //notice check
         if(!post.isNotice()){
             throw new BusinessException(NoticeErrorCode.NOT_NOTICE);
         }
