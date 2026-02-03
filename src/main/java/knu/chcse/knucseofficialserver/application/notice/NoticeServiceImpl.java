@@ -44,7 +44,7 @@ public class NoticeServiceImpl implements NoticeService {
                 ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        Post post = Post.create(student,noticeBoard,request.getTitle(),request.getContent(),false);
+        Post post = Post.create(student,noticeBoard,request.title(),request.content(),false);
 
         postRepository.save(post);
 
@@ -80,7 +80,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         Post post = getNoticePost(noticeId);
 
-        post.update(request.getTitle(),request.getContent());
+        post.update(request.title(),request.content());
     }
 
     @Override
