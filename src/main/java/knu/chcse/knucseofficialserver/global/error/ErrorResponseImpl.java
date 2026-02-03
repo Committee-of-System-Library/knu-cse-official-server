@@ -9,7 +9,6 @@ public class ErrorResponseImpl implements ErrorResponse{
     private final String code;
     private final String message;
 
-    //수정 최소화하도록 builder pattern으로
     @Builder
     public ErrorResponseImpl(String code, String message) {
         this.code = code;
