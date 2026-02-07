@@ -17,10 +17,8 @@ import knu.chcse.knucseofficialserver.global.error.NoticeErrorCode;
 import knu.chcse.knucseofficialserver.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,18 +31,13 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public Long createNotice(CreateNoticeRequest request, Long studentNumber) {
-
-        checkAdminPermission(studentNumber);
-
-        Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
-        );
+        Student student = checkAdminPermission(studentNumber);
 
         Board noticeBoard = boardRepository.findByCategory(BoardCategory.NOTICE).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        Post post = Post.create(student,noticeBoard,request.title(),request.content(),false);
+        Post post = Post.create(student, noticeBoard, request.title(), request.content(), false);
 
         postRepository.save(post);
 
@@ -52,7 +45,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public NoticeResponse getNotice(Long noticeId) {
          Post post = getNoticePost(noticeId);
 
@@ -65,10 +58,13 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public List<NoticeResponse> getNotices() {
         return postRepository
-                .findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE)
+                .findByBoard_CategoryAndStatusOrderByCreatedAtDesc(
+                        BoardCategory.NOTICE,
+                        PostStatus.ACTIVE
+                )
                 .stream()
                 .map(NoticeResponse::from)
                 .toList();
@@ -76,31 +72,32 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public void updateNotice(Long noticeId, Long studentNumber, UpdateNoticeRequest request) {
-        checkAdminPermission(studentNumber);
-
         Post post = getNoticePost(noticeId);
+
+        checkAdminPermission(studentNumber);
 
         post.update(request.title(),request.content());
     }
 
     @Override
     public void deleteNotice(Long noticeId, Long studentNumber) {
+        Post post = getNoticePost(noticeId);
 
         checkAdminPermission(studentNumber);
-
-        Post post = getNoticePost(noticeId);
 
         post.delete();
     }
 
-    private void checkAdminPermission(Long studentNumber){
+    private Student checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.INVALID_CREDENTIALS)
         );
 
         if(student.getRole() != StudentRole.ADMIN){
             throw new BusinessException(NoticeErrorCode.NO_NOTICE_PERMISSION);
         }
+
+        return student;
     }
 
     private Post getNoticePost(Long noticeId){

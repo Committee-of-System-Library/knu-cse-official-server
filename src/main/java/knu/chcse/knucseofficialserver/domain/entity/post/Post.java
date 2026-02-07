@@ -3,6 +3,7 @@ package knu.chcse.knucseofficialserver.domain.entity.post;
 import jakarta.persistence.*;
 import knu.chcse.knucseofficialserver.domain.entity.common.BaseTimeEntity;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
+import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
 import knu.chcse.knucseofficialserver.domain.entity.student.Student;
 import lombok.*;
 
@@ -38,8 +39,8 @@ public class Post extends BaseTimeEntity {
     @Column(name = "view_count",nullable = false)
     private Long viewCount;
 
-    @Column(name = "is_notice",nullable = false)
-    private boolean isNotice;
+    @Column(name = "is_pinned",nullable = false)
+    private boolean isPinned;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_status", nullable = false)
@@ -59,9 +60,13 @@ public class Post extends BaseTimeEntity {
         post.content = content;
         post.isAnonymous = isAnonymous;
         post.viewCount = 0L;
-        post.isNotice = false;
+        post.isPinned = false;
         post.status = PostStatus.ACTIVE;
         return post;
+    }
+
+    public boolean isNotice(){
+        return this.board.getCategory() == BoardCategory.NOTICE;
     }
 
     //domain 중심 설계
@@ -72,5 +77,10 @@ public class Post extends BaseTimeEntity {
 
     public void delete(){
         this.status = PostStatus.DELETED;
+    }
+
+    // 상단 고정 토글 메서드 (추후 구현용)
+    public void togglePin(){
+        this.isPinned = !this.isPinned;
     }
 }
