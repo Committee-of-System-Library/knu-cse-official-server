@@ -62,7 +62,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Transactional(readOnly = true)
     public List<NoticeResponse> getNotices() {
         return postRepository
-                .findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE)
+                .findByBoard_CategoryAndStatusOrderByCreatedAtDesc(
+                        BoardCategory.NOTICE,
+                        PostStatus.ACTIVE
+                )
                 .stream()
                 .map(NoticeResponse::from)
                 .toList();
