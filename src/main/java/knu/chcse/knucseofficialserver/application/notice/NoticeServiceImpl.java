@@ -91,7 +91,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     private void checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.INVALID_CREDENTIALS)
         );
 
         if(student.getRole() != StudentRole.ADMIN){
