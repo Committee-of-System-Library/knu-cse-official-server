@@ -89,7 +89,7 @@ public class NoticeServiceImpl implements NoticeService {
         post.delete();
     }
 
-    private void checkAdminPermission(Long studentNumber){
+    private Student checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
             ()-> new BusinessException(CommonErrorCode.INVALID_CREDENTIALS)
         );
@@ -97,6 +97,8 @@ public class NoticeServiceImpl implements NoticeService {
         if(student.getRole() != StudentRole.ADMIN){
             throw new BusinessException(NoticeErrorCode.NO_NOTICE_PERMISSION);
         }
+
+        return student;
     }
 
     private Post getNoticePost(Long noticeId){
