@@ -33,18 +33,13 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public Long createNotice(CreateNoticeRequest request, Long studentNumber) {
-
-        checkAdminPermission(studentNumber);
-
-        Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
-        );
+        Student student = checkAdminPermission(studentNumber);
 
         Board noticeBoard = boardRepository.findByCategory(BoardCategory.NOTICE).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        Post post = Post.create(student,noticeBoard,request.title(),request.content(),false);
+        Post post = Post.create(student, noticeBoard, request.title(), request.content(), false);
 
         postRepository.save(post);
 
