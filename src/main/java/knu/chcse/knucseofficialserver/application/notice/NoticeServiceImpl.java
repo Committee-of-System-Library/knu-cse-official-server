@@ -17,7 +17,6 @@ import knu.chcse.knucseofficialserver.global.error.NoticeErrorCode;
 import knu.chcse.knucseofficialserver.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public NoticeResponse getNotice(Long noticeId) {
          Post post = getNoticePost(noticeId);
 
@@ -60,7 +59,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public List<NoticeResponse> getNotices() {
         return postRepository
                 .findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE)
