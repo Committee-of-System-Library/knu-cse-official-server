@@ -73,19 +73,18 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public void updateNotice(Long noticeId, Long studentNumber, UpdateNoticeRequest request) {
-        checkAdminPermission(studentNumber);
-
         Post post = getNoticePost(noticeId);
+
+        checkAdminPermission(studentNumber);
 
         post.update(request.title(),request.content());
     }
 
     @Override
     public void deleteNotice(Long noticeId, Long studentNumber) {
+        Post post = getNoticePost(noticeId);
 
         checkAdminPermission(studentNumber);
-
-        Post post = getNoticePost(noticeId);
 
         post.delete();
     }
