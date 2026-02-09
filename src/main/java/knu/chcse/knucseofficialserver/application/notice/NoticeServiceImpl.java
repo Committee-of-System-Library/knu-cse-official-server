@@ -73,6 +73,9 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public void updateNotice(Long noticeId, Long studentNumber, UpdateNoticeRequest request) {
         Post post = getNoticePost(noticeId);
+        if (post.getStatus() != PostStatus.ACTIVE) {
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
 
         checkAdminPermission(studentNumber);
 
@@ -82,6 +85,9 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public void deleteNotice(Long noticeId, Long studentNumber) {
         Post post = getNoticePost(noticeId);
+        if (post.getStatus() != PostStatus.ACTIVE) {
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
 
         checkAdminPermission(studentNumber);
 
