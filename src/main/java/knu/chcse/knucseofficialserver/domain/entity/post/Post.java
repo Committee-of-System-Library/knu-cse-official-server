@@ -48,11 +48,11 @@ public class Post extends BaseTimeEntity {
 
     //static factory method
     public static Post create(
-            Student student,
-            Board board,
-            String title,
-            String content,
-            boolean isAnonymous){
+        Student student,
+        Board board,
+        String title,
+        String content,
+        boolean isAnonymous){
         Post post = new Post();
         post.student = student;
         post.board = board;
@@ -82,5 +82,10 @@ public class Post extends BaseTimeEntity {
     // 상단 고정 토글 메서드 (추후 구현용)
     public void togglePin(){
         this.isPinned = !this.isPinned;
+    }
+
+    // 조회수 증가 메서드
+    public void incrementViewCount(){
+        this.viewCount++;
     }
 }
