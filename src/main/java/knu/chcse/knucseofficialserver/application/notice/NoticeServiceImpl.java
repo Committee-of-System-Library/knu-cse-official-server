@@ -45,29 +45,32 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public NoticeResponse getNotice(Long noticeId) {
-         Post post = getNoticePost(noticeId);
+        Post post = getNoticePost(noticeId);
 
-         //soft delete check
-         if(post.getStatus() != PostStatus.ACTIVE){
-             throw new BusinessException(CommonErrorCode.NOT_FOUND);
-         }
+        //soft delete check
+        if(post.getStatus() != PostStatus.ACTIVE){
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
 
-         return NoticeResponse.from(post);
+        // 조회수 증가
+        post.incrementViewCount();
+
+        return NoticeResponse.from(post);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<NoticeResponse> getNotices() {
         return postRepository
-                .findByBoard_CategoryAndStatusOrderByCreatedAtDesc(
-                        BoardCategory.NOTICE,
-                        PostStatus.ACTIVE
-                )
-                .stream()
-                .map(NoticeResponse::from)
-                .toList();
+            .findByBoard_CategoryAndStatusOrderByCreatedAtDesc(
+                BoardCategory.NOTICE,
+                PostStatus.ACTIVE
+            )
+            .stream()
+            .map(NoticeResponse::from)
+            .toList();
     }
 
     @Override
@@ -79,7 +82,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         checkAdminPermission(studentNumber);
 
-        post.update(request.title(),request.content());
+        post.update(request.title(), request.content());
     }
 
     @Override
@@ -108,7 +111,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     private Post getNoticePost(Long noticeId){
         Post post = postRepository.findById(noticeId).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
         if(!post.isNotice()){
