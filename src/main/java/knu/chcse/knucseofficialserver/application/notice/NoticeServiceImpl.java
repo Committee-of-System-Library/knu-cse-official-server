@@ -17,10 +17,8 @@ import knu.chcse.knucseofficialserver.global.error.NoticeErrorCode;
 import knu.chcse.knucseofficialserver.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,18 +31,13 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public Long createNotice(CreateNoticeRequest request, Long studentNumber) {
-
-        checkAdminPermission(studentNumber);
-
-        Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
-        );
+        Student student = checkAdminPermission(studentNumber);
 
         Board noticeBoard = boardRepository.findByCategory(BoardCategory.NOTICE).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        Post post = Post.create(student,noticeBoard,request.title(),request.content(),false);
+        Post post = Post.create(student, noticeBoard, request.title(), request.content(), false);
 
         postRepository.save(post);
 
@@ -52,60 +45,73 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional
     public NoticeResponse getNotice(Long noticeId) {
-         Post post = getNoticePost(noticeId);
+        Post post = getNoticePost(noticeId);
 
-         //soft delete check
-         if(post.getStatus() != PostStatus.ACTIVE){
-             throw new BusinessException(CommonErrorCode.NOT_FOUND);
-         }
+        //soft delete check
+        if(post.getStatus() != PostStatus.ACTIVE){
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
 
-         return NoticeResponse.from(post);
+        // 조회수 증가
+        post.incrementViewCount();
+
+        return NoticeResponse.from(post);
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    @Transactional(readOnly = true)
     public List<NoticeResponse> getNotices() {
         return postRepository
-                .findByNoticeTrueAndStatusOrderByCreatedAtDesc(PostStatus.ACTIVE)
-                .stream()
-                .map(NoticeResponse::from)
-                .toList();
+            .findByBoard_CategoryAndStatusOrderByCreatedAtDesc(
+                BoardCategory.NOTICE,
+                PostStatus.ACTIVE
+            )
+            .stream()
+            .map(NoticeResponse::from)
+            .toList();
     }
 
     @Override
     public void updateNotice(Long noticeId, Long studentNumber, UpdateNoticeRequest request) {
+        Post post = getNoticePost(noticeId);
+        if (post.getStatus() != PostStatus.ACTIVE) {
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
+
         checkAdminPermission(studentNumber);
 
-        Post post = getNoticePost(noticeId);
-
-        post.update(request.title(),request.content());
+        post.update(request.title(), request.content());
     }
 
     @Override
     public void deleteNotice(Long noticeId, Long studentNumber) {
+        Post post = getNoticePost(noticeId);
+        if (post.getStatus() != PostStatus.ACTIVE) {
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
+        }
 
         checkAdminPermission(studentNumber);
-
-        Post post = getNoticePost(noticeId);
 
         post.delete();
     }
 
-    private void checkAdminPermission(Long studentNumber){
+    private Student checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.INVALID_CREDENTIALS)
         );
 
         if(student.getRole() != StudentRole.ADMIN){
             throw new BusinessException(NoticeErrorCode.NO_NOTICE_PERMISSION);
         }
+
+        return student;
     }
 
     private Post getNoticePost(Long noticeId){
         Post post = postRepository.findById(noticeId).orElseThrow(
-                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
+            ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
         if(!post.isNotice()){
