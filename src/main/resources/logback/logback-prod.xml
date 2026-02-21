@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
@@ -9,14 +8,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.springframework" level="INFO"/>
-  <logger name="org.springframework.web.filter.CorsFilter" level="DEBUG"/>
-  <logger name="org.springframework.web.servlet.resource.ResourceHttpRequestHandler" level="DEBUG"/>
-  <logger name="org.springframework.web.servlet.handler.AbstractHandlerMapping" level="DEBUG"/>
-  <logger name="knu.chcse.knucseofficialserver" level="INFO"/>
-
   <root level="INFO">
-    <appender-ref ref="STDOUT"/>
-    <appender-ref ref="SENTRY"/>
+    <appender-ref ref="DEBUG"/>
   </root>
 </configuration>
