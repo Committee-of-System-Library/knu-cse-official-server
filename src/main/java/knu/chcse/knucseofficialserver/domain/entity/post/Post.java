@@ -7,12 +7,16 @@ import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
 import knu.chcse.knucseofficialserver.domain.entity.student.Student;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name="post")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Post extends BaseTimeEntity {
+
+    private static final int QUESTION_PIN_DAYS = 7;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
@@ -34,13 +38,19 @@ public class Post extends BaseTimeEntity {
     private Board board;
 
     @Column(name = "is_anonymous",nullable = false)
-    private boolean isAnonymous;
+    private boolean anonymous;
 
     @Column(name = "view_count",nullable = false)
     private Long viewCount;
 
     @Column(name = "is_pinned",nullable = false)
-    private boolean isPinned;
+    private boolean pinned;
+
+    @Column(name = "pinned_until")
+    private LocalDateTime pinnedUntil;
+
+    @Column(name = "question", nullable = false)
+    private boolean question;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_status", nullable = false)
@@ -52,21 +62,36 @@ public class Post extends BaseTimeEntity {
         Board board,
         String title,
         String content,
-        boolean isAnonymous){
+        boolean anonymous,
+        boolean question
+    ) {
         Post post = new Post();
         post.student = student;
         post.board = board;
         post.title = title;
         post.content = content;
-        post.isAnonymous = isAnonymous;
+        post.anonymous = anonymous;
+        post.question = question;
         post.viewCount = 0L;
-        post.isPinned = false;
+        post.pinned = false;
+        post.pinnedUntil = question ? LocalDateTime.now().plusDays(QUESTION_PIN_DAYS) : null;
         post.status = PostStatus.ACTIVE;
         return post;
     }
 
     public boolean isNotice(){
         return this.board.getCategory() == BoardCategory.NOTICE;
+    }
+
+    public boolean isFreePost() { return this.board.getCategory() == BoardCategory.FREE; }
+
+    public boolean isOwnedBy(Long studentNumber) {
+        return this.student.getNumber().equals(studentNumber);
+    }
+
+    //질문글에 댓글이 달린 경우 수정/삭제 불가
+    public boolean isModifiable(boolean hasComments) {
+        return !(question && hasComments);
     }
 
     //domain 중심 설계
@@ -81,7 +106,7 @@ public class Post extends BaseTimeEntity {
 
     // 상단 고정 토글 메서드 (추후 구현용)
     public void togglePin(){
-        this.isPinned = !this.isPinned;
+        this.pinned = !this.pinned;
     }
 
     // 조회수 증가 메서드

@@ -37,7 +37,7 @@ public class NoticeServiceImpl implements NoticeService {
             ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
-        Post post = Post.create(student, noticeBoard, request.title(), request.content(), false);
+        Post post = Post.create(student, noticeBoard, request.title(), request.content(), false, false);
 
         postRepository.save(post);
 
