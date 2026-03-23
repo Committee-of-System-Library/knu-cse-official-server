@@ -2,10 +2,7 @@ package knu.chcse.knucseofficialserver.presentation.controller;
 
 import jakarta.validation.Valid;
 import knu.chcse.knucseofficialserver.application.notice.NoticeService;
-import knu.chcse.knucseofficialserver.application.notice.dto.CreateNoticeRequest;
-import knu.chcse.knucseofficialserver.application.notice.dto.NoticeResponse;
-import knu.chcse.knucseofficialserver.application.notice.dto.NoticeSyncRequest;
-import knu.chcse.knucseofficialserver.application.notice.dto.UpdateNoticeRequest;
+import knu.chcse.knucseofficialserver.application.notice.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,9 +77,10 @@ public class NoticeController implements NoticeControllerDocs {
     public ResponseEntity<Void> receiveNotices(
             @RequestBody NoticeSyncRequest request
     ){
-        int count = request.data() == null ? 0 : request.data().size();;
-
-        NoticeResponse response = noticeService.sync(request);
-        return ResponseEntity.ok(response);
+        if(request == null || request.data() == null || request.data().isEmpty()){
+            return ResponseEntity.badRequest().build();
+        }
+        noticeService.sync(request);
+        return ResponseEntity.ok().build();
     }
 }
