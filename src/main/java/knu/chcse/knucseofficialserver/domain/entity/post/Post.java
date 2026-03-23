@@ -69,7 +69,6 @@ public class Post extends BaseTimeEntity {
         return this.board.getCategory() == BoardCategory.NOTICE;
     }
 
-    //domain 중심 설계
     public void update(String title, String content){
         this.title = title;
         this.content = content;
@@ -79,12 +78,10 @@ public class Post extends BaseTimeEntity {
         this.status = PostStatus.DELETED;
     }
 
-    // 상단 고정 토글 메서드 (추후 구현용)
     public void togglePin(){
         this.isPinned = !this.isPinned;
     }
 
-    // 조회수 증가 메서드
     public void incrementViewCount(){
         this.viewCount++;
     }
