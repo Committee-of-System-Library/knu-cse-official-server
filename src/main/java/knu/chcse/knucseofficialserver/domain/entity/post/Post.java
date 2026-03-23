@@ -1,6 +1,7 @@
 package knu.chcse.knucseofficialserver.domain.entity.post;
 
 import jakarta.persistence.*;
+import knu.chcse.knucseofficialserver.domain.entity.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.common.BaseTimeEntity;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
@@ -45,6 +46,20 @@ public class Post extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "post_status", nullable = false)
     private PostStatus status;
+
+    public static Post from(
+            Notice notice,
+            Student student,
+            Board board
+    ){
+        return Post.create(
+                student,
+                board,
+                notice.getTitle(),
+                notice.getContent(),
+                false
+        );
+    }
 
     //static factory method
     public static Post create(
