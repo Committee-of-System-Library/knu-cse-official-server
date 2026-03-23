@@ -1,11 +1,11 @@
 package knu.chcse.knucseofficialserver.application.notice;
 
-import knu.chcse.knucseofficialserver.application.notice.dto.CreateNoticeRequest;
-import knu.chcse.knucseofficialserver.application.notice.dto.NoticeResponse;
-import knu.chcse.knucseofficialserver.application.notice.dto.UpdateNoticeRequest;
+import knu.chcse.knucseofficialserver.application.notice.dto.*;
+import knu.chcse.knucseofficialserver.domain.entity.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardJpaRepository;
+import knu.chcse.knucseofficialserver.domain.entity.notice.NoticeRepository;
 import knu.chcse.knucseofficialserver.domain.entity.post.Post;
 import knu.chcse.knucseofficialserver.domain.entity.post.PostJpaRepository;
 import knu.chcse.knucseofficialserver.domain.entity.post.PostStatus;
@@ -18,6 +18,7 @@ import knu.chcse.knucseofficialserver.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class NoticeServiceImpl implements NoticeService {
+    private final NoticeRepository  noticeRepository;
     private final PostJpaRepository postRepository;
     private final StudentJpaRepository studentRepository;
     private final BoardJpaRepository boardRepository;
@@ -97,6 +99,25 @@ public class NoticeServiceImpl implements NoticeService {
         post.delete();
     }
 
+    @Override
+    public void sync(NoticeSyncRequest request){
+        Student systemStudent = studentRepository.findById(1L).orElseThrow(
+                ()-> new IllegalArgumentException("시스템 유저가 없습니다.")
+        );
+        Board noticeBoard = boardRepository.findByCategory(BoardCategory.NOTICE).orElseThrow(
+                ()-> new IllegalArgumentException("공지 게시판이 없습니다.")
+        );
+
+        for(NoticeItemRequest item : request.data()){
+            Notice notice = noticeRepository.save(Notice.from(item));
+            Post post = Post.from(notice, systemStudent,noticeBoard);
+            postRepository.save(post);
+
+        }
+
+
+    }
+
     private Student checkAdminPermission(Long studentNumber){
         Student student = studentRepository.findByNumber(studentNumber).orElseThrow(
             ()-> new BusinessException(CommonErrorCode.INVALID_CREDENTIALS)
@@ -120,4 +141,5 @@ public class NoticeServiceImpl implements NoticeService {
 
         return post;
     }
+
 }
