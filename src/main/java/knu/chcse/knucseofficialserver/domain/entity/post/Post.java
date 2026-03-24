@@ -1,7 +1,7 @@
 package knu.chcse.knucseofficialserver.domain.entity.post;
 
 import jakarta.persistence.*;
-import knu.chcse.knucseofficialserver.domain.entity.Notice;
+import knu.chcse.knucseofficialserver.domain.entity.notice.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.common.BaseTimeEntity;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
