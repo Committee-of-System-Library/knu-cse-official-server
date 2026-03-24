@@ -1,11 +1,11 @@
 package knu.chcse.knucseofficialserver.application.notice;
 
-import knu.chcse.knucseofficialserver.application.notice.dto.CreateNoticeRequest;
-import knu.chcse.knucseofficialserver.application.notice.dto.NoticeResponse;
-import knu.chcse.knucseofficialserver.application.notice.dto.UpdateNoticeRequest;
+import knu.chcse.knucseofficialserver.application.notice.dto.*;
+import knu.chcse.knucseofficialserver.domain.entity.notice.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardJpaRepository;
+import knu.chcse.knucseofficialserver.domain.entity.notice.NoticeRepository;
 import knu.chcse.knucseofficialserver.domain.entity.post.Post;
 import knu.chcse.knucseofficialserver.domain.entity.post.PostJpaRepository;
 import knu.chcse.knucseofficialserver.domain.entity.post.PostStatus;
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,12 +38,14 @@ public class NoticeServiceImplTest {
     private StudentJpaRepository studentJpaRepository;
     @Mock
     private BoardJpaRepository boardJpaRepository;
+    @Mock
+    private NoticeRepository noticeRepository;
 
     private NoticeServiceImpl noticeService;
 
     @BeforeEach
     void setUp(){
-        this.noticeService = new NoticeServiceImpl(postJpaRepository, studentJpaRepository, boardJpaRepository);
+        this.noticeService = new NoticeServiceImpl(noticeRepository,postJpaRepository, studentJpaRepository, boardJpaRepository);
     }
 
     @Test
@@ -403,6 +406,107 @@ public class NoticeServiceImplTest {
         assertEquals(NoticeErrorCode.NO_NOTICE_PERMISSION, ex.getErrorCode());
     }
 
+    @Test
+    @DisplayName("syncNotice: 성공")
+    void syncNotice_success(){
+        //given
+        NoticeItemRequest item1 = new NoticeItemRequest(
+                "공지1",
+                "1내용입니다",
+                "2026-03-24",
+                "https://example1.com",
+                1L,
+                "제목입니다",
+                "ACTIVE"
+        );
+
+        NoticeItemRequest item2 = new NoticeItemRequest(
+                "공지2",
+                "2내용입니다",
+                "2026-03-24",
+                "https://example2.com",
+                2L,
+                "제목입니다",
+                "ACTIVE"
+        );
+
+        NoticeSyncRequest request = new NoticeSyncRequest(List.of(item1,item2));
+
+        Student student = mock(Student.class);
+        Board noticeBoard = mock(Board.class);
+
+        when(studentJpaRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(boardJpaRepository.findByCategory(BoardCategory.NOTICE)).thenReturn(Optional.of(noticeBoard));
+        when(noticeRepository.save(any(Notice.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        //when
+        noticeService.sync(request);
+
+
+        //then
+        verify(studentJpaRepository).findById(1L);
+        verify(boardJpaRepository).findByCategory(BoardCategory.NOTICE);
+        verify(postJpaRepository,times(2)).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("syncNotice: 1L 학생 없을시 NOT_FOUND")
+    void syncNotice_fail_studentNotFound() {
+        //given
+        NoticeItemRequest item = new NoticeItemRequest(
+                "공지1",
+                "내용입니다",
+                "2026-03-24",
+                "https://example.com",
+                1L,
+                "제목입니다",
+                "ACTIVE"
+        );
+        NoticeSyncRequest request = new NoticeSyncRequest(List.of(item));
+
+        when(studentJpaRepository.findById(1L)).thenReturn(Optional.empty());
+
+        //when
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> noticeService.sync(request));
+
+        //then
+        assertEquals(CommonErrorCode.NOT_FOUND, ex.getErrorCode());
+        verify(postJpaRepository,never()).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("syncNotice: NOTICE 게시판이 없으면 NOT_FOUND")
+    void syncNotice_fail_noticeBoardNotFound() {
+        // given
+        NoticeItemRequest item = new NoticeItemRequest(
+                "공지1",
+                "내용입니다",
+                "2026-03-24",
+                "https://example.com",
+                1L,
+                "제목입니다",
+                "ACTIVE"
+        );
+        NoticeSyncRequest request = new NoticeSyncRequest(List.of(item));
+
+        Student student = mock(Student.class);
+        when(studentJpaRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(boardJpaRepository.findByCategory(BoardCategory.NOTICE))
+                .thenReturn(Optional.empty());
+
+        // when
+        BusinessException ex = assertThrows(
+                BusinessException.class,
+                () -> noticeService.sync(request)
+        );
+
+        // then
+        assertEquals(CommonErrorCode.NOT_FOUND, ex.getErrorCode());
+        verify(postJpaRepository, never()).save(any(Post.class));
+    }
+
+
     private Post givenActiveNoticePost(Long noticeId){
         Post post = mock(Post.class);
 
@@ -450,5 +554,7 @@ public class NoticeServiceImplTest {
 
         return student;
     }
+
+
 
 }
