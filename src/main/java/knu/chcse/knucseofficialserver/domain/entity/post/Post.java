@@ -1,6 +1,7 @@
 package knu.chcse.knucseofficialserver.domain.entity.post;
 
 import jakarta.persistence.*;
+import knu.chcse.knucseofficialserver.domain.entity.notice.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.common.BaseTimeEntity;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
@@ -46,6 +47,20 @@ public class Post extends BaseTimeEntity {
     @Column(name = "post_status", nullable = false)
     private PostStatus status;
 
+    public static Post from(
+            Notice notice,
+            Student student,
+            Board board
+    ){
+        return Post.create(
+                student,
+                board,
+                notice.getTitle(),
+                notice.getContent(),
+                false
+        );
+    }
+
     //static factory method
     public static Post create(
         Student student,
@@ -69,7 +84,6 @@ public class Post extends BaseTimeEntity {
         return this.board.getCategory() == BoardCategory.NOTICE;
     }
 
-    //domain 중심 설계
     public void update(String title, String content){
         this.title = title;
         this.content = content;
@@ -79,12 +93,10 @@ public class Post extends BaseTimeEntity {
         this.status = PostStatus.DELETED;
     }
 
-    // 상단 고정 토글 메서드 (추후 구현용)
     public void togglePin(){
         this.isPinned = !this.isPinned;
     }
 
-    // 조회수 증가 메서드
     public void incrementViewCount(){
         this.viewCount++;
     }
