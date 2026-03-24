@@ -1,10 +1,10 @@
 package knu.chcse.knucseofficialserver.application.notice;
 
 import knu.chcse.knucseofficialserver.application.notice.dto.*;
-import knu.chcse.knucseofficialserver.domain.entity.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.board.Board;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardCategory;
 import knu.chcse.knucseofficialserver.domain.entity.board.BoardJpaRepository;
+import knu.chcse.knucseofficialserver.domain.entity.notice.Notice;
 import knu.chcse.knucseofficialserver.domain.entity.notice.NoticeRepository;
 import knu.chcse.knucseofficialserver.domain.entity.post.Post;
 import knu.chcse.knucseofficialserver.domain.entity.post.PostJpaRepository;
@@ -102,10 +102,10 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public void sync(NoticeSyncRequest request){
         Student systemStudent = studentRepository.findById(1L).orElseThrow(
-                ()-> new IllegalArgumentException("시스템 유저가 없습니다.")
+                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
         Board noticeBoard = boardRepository.findByCategory(BoardCategory.NOTICE).orElseThrow(
-                ()-> new IllegalArgumentException("공지 게시판이 없습니다.")
+                ()-> new BusinessException(CommonErrorCode.NOT_FOUND)
         );
 
         for(NoticeItemRequest item : request.data()){
